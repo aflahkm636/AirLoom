@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, Card, Typography, Space, Divider } from 'antd';
 import { LogoutOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
+import Swal from 'sweetalert2';
 import { logout } from '../features/auth/authSlice';
 import { selectUser } from '../features/auth/authSelectors';
 
@@ -12,9 +13,24 @@ const StaffDashboard = () => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login', { replace: true });
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: 'Confirm Logout',
+      text: 'Are you sure you want to logout?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#7f13ec',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, logout',
+      cancelButtonText: 'Cancel',
+      background: '#182430',
+      color: '#fff',
+    });
+
+    if (result.isConfirmed) {
+      dispatch(logout());
+      navigate('/login', { replace: true });
+    }
   };
 
   return (
