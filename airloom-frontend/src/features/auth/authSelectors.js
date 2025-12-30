@@ -6,6 +6,8 @@ export const selectUser = (state) => state.auth.user;
 
 export const selectUserRole = (state) => state.auth.user?.role;
 
+export const selectUserName = (state) => state.auth.user?.name || state.auth.user?.userName || 'User';
+
 export const selectAuthLoading = (state) => state.auth.loading;
 
 export const selectAuthError = (state) => state.auth.error;

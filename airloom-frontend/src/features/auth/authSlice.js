@@ -38,8 +38,9 @@ export const loginAsync = createAsyncThunk(
         return rejectWithValue('Role not found in token - forcing logout');
       }
       
-      // Extract userName from token
+      // Extract userName and userId from token
       const userName = decoded.UserName || decoded.userName || 'User';
+      const userId = decoded.UserId || decoded.userId || null;
       
       // Return user data and token
       return {
@@ -47,6 +48,7 @@ export const loginAsync = createAsyncThunk(
         user: {
           userName,
           role,
+          id: userId,
         },
       };
     } catch (error) {

@@ -1,5 +1,5 @@
 // API Base URL
-export const API_BASE_URL = 'https://localhost:7279';
+export const API_BASE_URL = 'http://localhost:5195';
 
 // Role-based route mappings
 export const ROLE_ROUTES = {

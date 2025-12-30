@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
 import { 
   Card, 
   Table, 
@@ -17,18 +15,11 @@ import {
   Statistic 
 } from 'antd';
 import {
-  LogoutOutlined,
   ExclamationCircleOutlined,
-  CheckCircleOutlined,
   ClockCircleOutlined,
-  WarningOutlined,
   CalendarOutlined,
   FileTextOutlined,
-  UserOutlined,
 } from '@ant-design/icons';
-import Swal from 'sweetalert2';
-import { logout } from '../features/auth/authSlice';
-import { selectUser } from '../features/auth/authSelectors';
 import { getComplaints } from '../api/complaints.api';
 import { getServiceTasks } from '../api/serviceTasks.api';
 
@@ -50,10 +41,6 @@ const colors = {
 };
 
 const AdminDashboard = () => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const user = useSelector(selectUser);
-
   const [complaints, setComplaints] = useState([]);
   const [serviceTasks, setServiceTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,25 +106,6 @@ const AdminDashboard = () => {
     });
 
   const pendingComplaints = complaints.filter(c => c.Status === 'Pending').slice(0, 5);
-
-  const handleLogout = async () => {
-    const result = await Swal.fire({
-      title: 'Confirm Logout',
-      text: 'Are you sure you want to logout?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: colors.primary,
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Yes, logout',
-      background: colors.surface,
-      color: '#fff',
-    });
-
-    if (result.isConfirmed) {
-      dispatch(logout());
-      navigate('/login', { replace: true });
-    }
-  };
 
   const handleTaskClick = (task) => {
     setSelectedTask(task);
@@ -260,31 +228,8 @@ const AdminDashboard = () => {
     },
   ];
 
-  // Styles - Responsive
+  // Styles
   const styles = {
-    page: {
-      minHeight: '100vh',
-      background: colors.background,
-    },
-    header: {
-      minHeight: 64,
-      background: colors.surface,
-      borderBottom: `1px solid ${colors.border}`,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '12px 16px',
-      position: 'sticky',
-      top: 0,
-      zIndex: 10,
-      flexWrap: 'wrap',
-      gap: 8,
-    },
-    content: {
-      padding: '16px',
-      maxWidth: 1400,
-      margin: '0 auto',
-    },
     card: {
       background: colors.surface,
       border: `1px solid ${colors.border}`,
@@ -307,10 +252,6 @@ const AdminDashboard = () => {
     tableWrapper: {
       overflowX: 'auto',
     },
-    sectionTitle: {
-      color: colors.textPrimary,
-      marginBottom: 16,
-    },
     tableHeader: {
       padding: '12px 16px',
       borderBottom: `1px solid ${colors.border}`,
@@ -324,8 +265,8 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div style={{ ...styles.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Space direction="vertical" align="center">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
+        <Space orientation="vertical" align="center">
           <Spin size="large" />
           <Text style={{ color: colors.textSecondary }}>Loading dashboard...</Text>
         </Space>
@@ -335,121 +276,99 @@ const AdminDashboard = () => {
 
   if (error) {
     return (
-      <div style={{ ...styles.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
         <Empty description={<Text style={{ color: colors.textSecondary }}>{error}</Text>} />
       </div>
     );
   }
 
   return (
-    <div style={styles.page}>
-      {/* Header */}
-      <header style={styles.header}>
-        <Title level={4} style={{ color: colors.textPrimary, margin: 0 }}>
-          Admin Dashboard
-        </Title>
-        <Space size="middle">
-          <Space>
-            <UserOutlined style={{ color: colors.primary, fontSize: 18 }} />
-            <Text style={{ color: colors.textPrimary }}>{user?.userName || 'Admin'}</Text>
-          </Space>
-          <Button
-            type="text"
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-            style={{ color: colors.textSecondary }}
-          />
-        </Space>
-      </header>
+    <div>
+      {/* Summary Cards */}
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={8}>
+          <Card style={styles.statCard} styles={{ body: { padding: 20 } }}>
+            <Statistic
+              title={<Text style={{ color: colors.textSecondary }}>Pending Complaints</Text>}
+              value={pendingComplaintsCount}
+              prefix={<ExclamationCircleOutlined style={{ color: colors.orange }} />}
+              valueStyle={{ color: colors.orange, fontSize: 32 }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card style={styles.statCard} styles={{ body: { padding: 20 } }}>
+            <Statistic
+              title={<Text style={{ color: colors.textSecondary }}>Pending Service Tasks</Text>}
+              value={pendingServiceTasksCount}
+              prefix={<ClockCircleOutlined style={{ color: colors.blue }} />}
+              valueStyle={{ color: colors.blue, fontSize: 32 }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card style={styles.statCard} styles={{ body: { padding: 20 } }}>
+            <Statistic
+              title={<Text style={{ color: colors.textSecondary }}>Today's Tasks</Text>}
+              value={todaysTasksCount}
+              prefix={<CalendarOutlined style={{ color: colors.primary }} />}
+              valueStyle={{ color: colors.primary, fontSize: 32 }}
+            />
+          </Card>
+        </Col>
+      </Row>
 
-      {/* Content */}
-      <div style={styles.content}>
-        {/* Summary Cards */}
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={8}>
-            <Card style={styles.statCard} styles={{ body: { padding: 20 } }}>
-              <Statistic
-                title={<Text style={{ color: colors.textSecondary }}>Pending Complaints</Text>}
-                value={pendingComplaintsCount}
-                prefix={<ExclamationCircleOutlined style={{ color: colors.orange }} />}
-                valueStyle={{ color: colors.orange, fontSize: 32 }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card style={styles.statCard} styles={{ body: { padding: 20 } }}>
-              <Statistic
-                title={<Text style={{ color: colors.textSecondary }}>Pending Service Tasks</Text>}
-                value={pendingServiceTasksCount}
-                prefix={<ClockCircleOutlined style={{ color: colors.blue }} />}
-                valueStyle={{ color: colors.blue, fontSize: 32 }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card style={styles.statCard} styles={{ body: { padding: 20 } }}>
-              <Statistic
-                title={<Text style={{ color: colors.textSecondary }}>Today's Tasks</Text>}
-                value={todaysTasksCount}
-                prefix={<CalendarOutlined style={{ color: colors.primary }} />}
-                valueStyle={{ color: colors.primary, fontSize: 32 }}
-              />
-            </Card>
-          </Col>
-        </Row>
+      {/* All Active Tasks */}
+      <Card style={styles.tableCard} styles={{ body: { padding: 0 } }}>
+        <div style={styles.tableHeader}>
+          <Title level={5} style={{ color: colors.textPrimary, margin: 0, fontSize: 16 }}>
+            All Active Tasks
+          </Title>
+          <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{allActiveTasks.length} tasks</Text>
+        </div>
+        <div style={styles.tableWrapper}>
+          {allActiveTasks.length > 0 ? (
+            <Table
+              columns={taskColumns}
+              dataSource={allActiveTasks}
+              rowKey="Id"
+              pagination={{ pageSize: 10, size: 'small' }}
+              scroll={{ x: 700 }}
+              size="small"
+              onRow={(record) => ({
+                onClick: () => handleTaskClick(record),
+                style: { cursor: 'pointer' },
+              })}
+            />
+          ) : (
+            <Empty description="No active tasks" style={{ padding: 48 }} />
+          )}
+        </div>
+      </Card>
 
-        {/* All Active Tasks */}
-        <Card style={styles.tableCard} styles={{ body: { padding: 0 } }}>
-          <div style={styles.tableHeader}>
-            <Title level={5} style={{ color: colors.textPrimary, margin: 0, fontSize: 16 }}>
-              All Active Tasks
-            </Title>
-            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{allActiveTasks.length} tasks</Text>
-          </div>
-          <div style={styles.tableWrapper}>
-            {allActiveTasks.length > 0 ? (
-              <Table
-                columns={taskColumns}
-                dataSource={allActiveTasks}
-                rowKey="Id"
-                pagination={{ pageSize: 10, size: 'small' }}
-                scroll={{ x: 700 }}
-                size="small"
-                onRow={(record) => ({
-                  onClick: () => handleTaskClick(record),
-                  style: { cursor: 'pointer' },
-                })}
-              />
-            ) : (
-              <Empty description="No active tasks" style={{ padding: 48 }} />
-            )}
-          </div>
-        </Card>
-
-        {/* Pending Complaints */}
-        <Card style={styles.tableCard} styles={{ body: { padding: 0 } }}>
-          <div style={styles.tableHeader}>
-            <Title level={5} style={{ color: colors.textPrimary, margin: 0, fontSize: 16 }}>
-              Pending Complaints
-            </Title>
-            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{pendingComplaintsCount} complaints</Text>
-          </div>
-          <div style={styles.tableWrapper}>
-            {pendingComplaints.length > 0 ? (
-              <Table
-                columns={complaintsColumns}
-                dataSource={pendingComplaints}
-                rowKey="Id"
-                pagination={false}
-                scroll={{ x: 500 }}
-                size="small"
-              />
-            ) : (
-              <Empty description="No pending complaints" style={{ padding: 48 }} />
-            )}
-          </div>
-        </Card>
-      </div>
+      {/* Pending Complaints */}
+      <Card style={styles.tableCard} styles={{ body: { padding: 0 } }}>
+        <div style={styles.tableHeader}>
+          <Title level={5} style={{ color: colors.textPrimary, margin: 0, fontSize: 16 }}>
+            Pending Complaints
+          </Title>
+          <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{pendingComplaintsCount} complaints</Text>
+        </div>
+        <div style={styles.tableWrapper}>
+          {pendingComplaints.length > 0 ? (
+            <Table
+              columns={complaintsColumns}
+              dataSource={pendingComplaints}
+              rowKey="Id"
+              pagination={false}
+              scroll={{ x: 500 }}
+              size="small"
+            />
+          ) : (
+            <Empty description="No pending complaints" style={{ padding: 48 }} />
+          )}
+        </div>
+      </Card>
 
       {/* Task Detail Modal */}
       <Modal
