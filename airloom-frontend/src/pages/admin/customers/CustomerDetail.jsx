@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Descriptions, Button, Tag, Spin, Typography, message, Result } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Card, Descriptions, Button, Tag, Spin, Typography, message, Result, Avatar, Flex } from 'antd';
+import { ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
 import { getCustomerById } from '../../../api/customers.api';
+import { API_BASE_URL } from '../../../utils/constants';
 
 const { Title } = Typography;
 
@@ -70,11 +71,19 @@ const CustomerDetail = () => {
         Back to Customers
       </Button>
 
-      <Title level={2} style={{ marginBottom: '24px', fontSize: 'clamp(20px, 5vw, 30px)' }}>
-        Customer Details
-      </Title>
-
       <Card styles={{ body: { padding: 'clamp(12px, 2vw, 24px)' } }}>
+        <Flex gap="large" align="center" style={{ marginBottom: '24px' }}>
+          <Avatar 
+            size={80} 
+            src={customer.profileImage ? (customer.profileImage.startsWith('http') ? customer.profileImage : `${API_BASE_URL}/${customer.profileImage}`) : null} 
+            icon={<UserOutlined />} 
+          />
+          <div>
+            <Title level={3} style={{ margin: 0 }}>{customer.name}</Title>
+            <Typography.Text type="secondary">{customer.email}</Typography.Text>
+          </div>
+        </Flex>
+
         <Descriptions bordered column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}>
           <Descriptions.Item label="Name">{customer.name}</Descriptions.Item>
           <Descriptions.Item label="Email">{customer.email}</Descriptions.Item>

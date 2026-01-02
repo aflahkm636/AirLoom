@@ -16,6 +16,7 @@ const ProductFormModal = ({ visible, onCancel, onSuccess, product }) => {
       form.setFieldsValue({
         Name: product.Name,
         Type: product.Type,
+        Category: product.Category,
         Price: product.Price,
         QuantityInStock: product.QuantityInStock,
         ReorderLevel: product.ReorderLevel,
@@ -34,15 +35,18 @@ const ProductFormModal = ({ visible, onCancel, onSuccess, product }) => {
       setLoading(true);
 
       const formData = new FormData();
-      formData.append('Name', values.Name);
+      formData.append('Name', (values.Name || '').trim());
       formData.append('Type', values.Type);
+      formData.append('Category', (values.Category || '').trim());
       formData.append('Price', values.Price);
       formData.append('QuantityInStock', values.QuantityInStock);
       formData.append('ReorderLevel', values.ReorderLevel);
-      formData.append('ActionUserId', user?.id || 1); // Fallback to 1 if user id is missing
+      formData.append('ActionUserId', user?.id || 1);
 
+      // Only append the file if a new one was selected
       if (fileList.length > 0) {
-        formData.append('ProductImageFile', fileList[0].originFileObj);
+        const fileToUpload = fileList[0].originFileObj || fileList[0];
+        formData.append('ProductImageFile', fileToUpload);
       }
 
       if (product) {
@@ -104,6 +108,14 @@ const ProductFormModal = ({ visible, onCancel, onSuccess, product }) => {
             <Select.Option value="Machine">Machine</Select.Option>
             <Select.Option value="Refill">Refill</Select.Option>
           </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="Category"
+          label="Category"
+          rules={[{ required: true, message: 'Please enter category' }]}
+        >
+          <Input placeholder="Enter category (e.g. Fragrance, Dispenser)" />
         </Form.Item>
 
         <Form.Item

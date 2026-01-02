@@ -34,10 +34,12 @@ import {
   InboxOutlined,
   SearchOutlined,
   FilterOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  EyeOutlined
 } from '@ant-design/icons';
 import { 
   getProducts, 
+  getProductById,
   deleteProduct, 
   getLowStockProducts, 
   getInventoryValue,
@@ -48,6 +50,7 @@ import {
 import { API_BASE_URL } from '../../../utils/constants';
 import Swal from 'sweetalert2';
 import ProductFormModal from './ProductFormModal';
+import ProductDetailDrawer from './ProductDetailDrawer';
 
 const { Title, Text } = Typography;
 
@@ -68,6 +71,9 @@ const InventoryPage = () => {
 
   const [formModalVisible, setFormModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [detailProduct, setDetailProduct] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const fetchData = useCallback(async (page = 1, pSize = 10, query = '', type = null, minP = null, maxP = null) => {
     try {
@@ -258,6 +264,12 @@ const InventoryPage = () => {
       responsive: ['md'],
     },
     {
+      title: 'Category',
+      dataIndex: 'Category',
+      key: 'Category',
+      responsive: ['md'],
+    },
+    {
       title: 'Price',
       dataIndex: 'Price',
       key: 'Price',
@@ -283,6 +295,12 @@ const InventoryPage = () => {
       key: 'actions',
       render: (_, record) => (
         <Space size="small">
+          <Button 
+            type="text" 
+            icon={<EyeOutlined style={{ color: '#1890ff' }} />} 
+            onClick={() => handleViewProduct(record.Id)}
+            title="View Details"
+          />
           <Button 
             type="text" 
             icon={<ArrowUpOutlined style={{ color: '#52c41a' }} />} 
@@ -316,6 +334,20 @@ const InventoryPage = () => {
   const openFormModal = (product = null) => {
     setSelectedProduct(product);
     setFormModalVisible(true);
+  };
+
+  const handleViewProduct = async (productId) => {
+    try {
+      setDetailVisible(true);
+      setDetailLoading(true);
+      const response = await getProductById(productId);
+      setDetailProduct(response.data || response);
+    } catch (error) {
+      message.error('Failed to load product details');
+      setDetailVisible(false);
+    } finally {
+      setDetailLoading(false);
+    }
   };
 
   return (
@@ -534,6 +566,17 @@ const InventoryPage = () => {
           setFormModalVisible(false);
           fetchData(currentPage, pageSize, searchQuery);
           fetchSummaries();
+        }}
+      />
+
+      <ProductDetailDrawer
+        visible={detailVisible}
+        onClose={() => setDetailVisible(false)}
+        loading={detailLoading}
+        data={detailProduct}
+        onEdit={(product) => {
+          setDetailVisible(false);
+          openFormModal(product);
         }}
       />
     </div>

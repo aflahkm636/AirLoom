@@ -1,8 +1,12 @@
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Dropdown, Avatar, Badge } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import Swal from 'sweetalert2';
-import { logout } from '../features/auth/authSlice';
+import { logout, fetchUserProfileAsync } from '../features/auth/authSlice';
+import { selectUser } from '../features/auth/authSelectors';
+import { API_BASE_URL } from '../utils/constants';
 
 // Map routes to page titles
 const pageTitles = {
@@ -18,6 +22,17 @@ const Header = ({ userName = 'John Doe', userRole = 'Admin', onMenuToggle }) => 
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
+
+  useEffect(() => {
+    if (user?.id && !user.profileImage) {
+      dispatch(fetchUserProfileAsync(user.id));
+    }
+  }, [dispatch, user?.id, user?.profileImage]);
+
+  const profileImageUrl = user?.profileImage 
+    ? (user.profileImage.startsWith('http') ? user.profileImage : `${API_BASE_URL}/${user.profileImage}`)
+    : null;
 
   // Derive page title from current route
   const getPageTitle = () => {
@@ -121,11 +136,13 @@ const Header = ({ userName = 'John Doe', userRole = 'Admin', onMenuToggle }) => 
           <button className="header-user-btn">
             <Avatar
               size={32}
+              src={profileImageUrl}
+              icon={!profileImageUrl && <UserOutlined />}
               style={{
-                background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+                background: profileImageUrl ? 'transparent' : 'linear-gradient(135deg, #a855f7, #7c3aed)',
               }}
             >
-              {userName.charAt(0).toUpperCase()}
+              {!profileImageUrl && userName.charAt(0).toUpperCase()}
             </Avatar>
             <div className="header-user-info">
               <p className="header-user-name">{userName}</p>

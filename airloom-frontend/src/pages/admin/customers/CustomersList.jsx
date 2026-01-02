@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, Card, Typography, Spin, Empty, message, Flex } from 'antd';
+import { Table, Button, Tag, Space, Card, Typography, Spin, Empty, message, Flex, Avatar } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import { PlusOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons';
 import { getCustomers } from '../../../api/customers.api';
 import CreateCustomerModal from './CreateCustomerModal';
+import { API_BASE_URL } from '../../../utils/constants';
 
 const { Title } = Typography;
 
@@ -33,6 +34,16 @@ const CustomersList = () => {
   }, []);
 
   const columns = [
+    {
+      title: 'Avatar',
+      dataIndex: 'profileImage',
+      key: 'profileImage',
+      width: 80,
+      render: (url) => {
+        const fullUrl = url ? (url.startsWith('http') ? url : `${API_BASE_URL}/${url}`) : null;
+        return <Avatar src={fullUrl} icon={<UserOutlined />} />;
+      },
+    },
     {
       title: 'Name',
       dataIndex: 'name',

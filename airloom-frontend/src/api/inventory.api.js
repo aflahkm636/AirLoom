@@ -11,20 +11,13 @@ export const getProductById = async (id) => {
 };
 
 export const createProduct = async (formData) => {
-  const response = await api.post('/api/Inventory/create', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  // Omit headers to let Axios set correct multipart boundary
+  const response = await api.post('/api/Inventory/create', formData);
   return response.data;
 };
 
 export const updateProduct = async (formData) => {
-  const response = await api.put('/api/Inventory/update', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await api.put('/api/Inventory/update', formData);
   return response.data;
 };
 

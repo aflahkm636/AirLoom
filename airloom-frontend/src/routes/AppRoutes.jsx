@@ -20,6 +20,7 @@ import {
 import CustomersList from '../pages/admin/customers/CustomersList';
 import CustomerDetail from '../pages/admin/customers/CustomerDetail';
 import InventoryPage from '../pages/admin/inventory/InventoryPage';
+import SubscriptionManagement from '../pages/admin/subscriptions/SubscriptionManagement';
 
 const AppRoutes = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -52,7 +53,7 @@ const AppRoutes = () => {
         <Route path="/admin/customers/:id" element={<CustomerDetail />} />
         <Route path="/admin/inventory" element={<InventoryPage />} />
         <Route path="/admin/billing" element={<BillingPage />} />
-        <Route path="/admin/subscriptions" element={<SubscriptionsPage />} />
+        <Route path="/admin/subscriptions" element={<SubscriptionManagement />} />
         <Route path="/admin/service-tasks" element={<ServiceTasksPage />} />
         <Route path="/admin/settings" element={<SettingsPage />} />
 

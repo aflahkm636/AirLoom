@@ -27,7 +27,8 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
       formData.append('CreatedBy', userName);
 
       if (fileList.length > 0) {
-        formData.append('ProfileImageFile', fileList[0].originFileObj);
+        const fileToUpload = fileList[0].originFileObj || fileList[0];
+        formData.append('ProfileImageFile', fileToUpload);
       }
 
       await createCustomer(formData);

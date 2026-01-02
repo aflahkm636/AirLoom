@@ -19,3 +19,13 @@ export const loginUser = async (email, password) => {
     throw error;
   }
 };
+
+/**
+ * Fetch user profile by ID
+ * @param {number|string} id - User ID
+ * @returns {Promise} API response with data containing user profile
+ */
+export const getUserProfile = async (id) => {
+  const response = await api.get(`/api/users/${id}`);
+  return response.data;
+};

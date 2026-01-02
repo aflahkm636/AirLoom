@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { loginUser } from '../../api/auth.api';
+import { loginUser, getUserProfile } from '../../api/auth.api';
 import { decodeToken, getUserRole, isTokenExpired } from '../../utils/jwtHelper';
 import { AUTH_STORAGE_KEY } from '../../utils/constants';
 
@@ -54,6 +54,19 @@ export const loginAsync = createAsyncThunk(
     } catch (error) {
       const message = error.response?.data?.message || error.message || 'Login failed';
       return rejectWithValue(message);
+    }
+  }
+);
+
+// Async thunk for fetching user profile
+export const fetchUserProfileAsync = createAsyncThunk(
+  'auth/fetchProfile',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await getUserProfile(userId);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
     }
   }
 );
@@ -150,6 +163,16 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
         state.token = null;
+      })
+      // Fetch user profile
+      .addCase(fetchUserProfileAsync.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user = {
+            ...state.user,
+            profileImage: action.payload.ProfileImage || action.payload.profileImage,
+            name: action.payload.Name || action.payload.name || state.user.userName
+          };
+        }
       });
   },
 });
