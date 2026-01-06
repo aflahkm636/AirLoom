@@ -292,7 +292,7 @@ const AdminDashboard = () => {
               title={<Text style={{ color: colors.textSecondary }}>Pending Complaints</Text>}
               value={pendingComplaintsCount}
               prefix={<ExclamationCircleOutlined style={{ color: colors.orange }} />}
-              valueStyle={{ color: colors.orange, fontSize: 32 }}
+              styles={{ content: { color: colors.orange, fontSize: 32 } }}
             />
           </Card>
         </Col>
@@ -302,7 +302,7 @@ const AdminDashboard = () => {
               title={<Text style={{ color: colors.textSecondary }}>Pending Service Tasks</Text>}
               value={pendingServiceTasksCount}
               prefix={<ClockCircleOutlined style={{ color: colors.blue }} />}
-              valueStyle={{ color: colors.blue, fontSize: 32 }}
+              styles={{ content: { color: colors.blue, fontSize: 32 } }}
             />
           </Card>
         </Col>
@@ -312,7 +312,7 @@ const AdminDashboard = () => {
               title={<Text style={{ color: colors.textSecondary }}>Today's Tasks</Text>}
               value={todaysTasksCount}
               prefix={<CalendarOutlined style={{ color: colors.primary }} />}
-              valueStyle={{ color: colors.primary, fontSize: 32 }}
+              styles={{ content: { color: colors.primary, fontSize: 32 } }}
             />
           </Card>
         </Col>

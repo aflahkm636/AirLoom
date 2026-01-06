@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { selectIsAuthenticated, selectUserRole } from '../features/auth/authSelectors';
 import { ROLE_ROUTES } from '../utils/constants';
 import ProtectedRoute from '../components/ProtectedRoute';
+import PermissionGate from '../components/PermissionGate';
 import DashboardLayout from '../layouts/DashboardLayout';
 import Login from '../pages/Login';
 import AdminDashboard from '../pages/AdminDashboard';
@@ -11,7 +12,7 @@ import StaffDashboard from '../pages/StaffDashboard';
 import TechnicianDashboard from '../pages/TechnicianDashboard';
 import {
   BillingPage,
-  ServiceTasksPage,
+  ServiceTasksPage as ServiceTasksPlaceholder,
   SettingsPage,
   CustomersPage,
   SubscriptionsPage,
@@ -19,14 +20,19 @@ import {
 } from '../pages/PlaceholderPages';
 import CustomersList from '../pages/admin/customers/CustomersList';
 import CustomerDetail from '../pages/admin/customers/CustomerDetail';
+import EmployeesList from '../pages/admin/employees/EmployeesList';
+import EmployeeDetail from '../pages/admin/employees/EmployeeDetail';
 import InventoryPage from '../pages/admin/inventory/InventoryPage';
 import SubscriptionManagement from '../pages/admin/subscriptions/SubscriptionManagement';
+import SubscriptionPlansList from '../pages/admin/subscription-plans/SubscriptionPlansList';
+import ServiceTasksPage from '../pages/admin/service-tasks/ServiceTasksPage';
+import TechniciansList from '../pages/admin/technicians/TechniciansList';
+import TechnicianDetail from '../pages/admin/technicians/TechnicianDetail';
 
 const AppRoutes = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const userRole = useSelector(selectUserRole);
 
-  // Determine default route based on authentication and role
   const getDefaultRoute = () => {
     if (!isAuthenticated) {
       return '/login';
@@ -47,23 +53,78 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        {/* Admin Routes */}
+        {/* Admin Routes - No permission gates needed, admin has all access */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/customers" element={<CustomersList />} />
         <Route path="/admin/customers/:id" element={<CustomerDetail />} />
+        <Route path="/admin/employees" element={<EmployeesList />} />
+        <Route path="/admin/employees/:id" element={<EmployeeDetail />} />
+        <Route path="/admin/technicians" element={<TechniciansList />} />
+        <Route path="/admin/technicians/:id" element={<TechnicianDetail />} />
         <Route path="/admin/inventory" element={<InventoryPage />} />
         <Route path="/admin/billing" element={<BillingPage />} />
         <Route path="/admin/subscriptions" element={<SubscriptionManagement />} />
+        <Route path="/admin/subscription-plans" element={<SubscriptionPlansList />} />
         <Route path="/admin/service-tasks" element={<ServiceTasksPage />} />
         <Route path="/admin/settings" element={<SettingsPage />} />
 
-        {/* Staff Routes */}
+        {/* Staff Routes - Protected by PermissionGate */}
         <Route path="/staff" element={<StaffDashboard />} />
-        <Route path="/staff/customers" element={<CustomersPage />} />
-        <Route path="/staff/inventory" element={<InventoryPlaceholder />} />
-        <Route path="/staff/billing" element={<BillingPage />} />
-        <Route path="/staff/subscriptions" element={<SubscriptionsPage />} />
-        <Route path="/staff/service-tasks" element={<ServiceTasksPage />} />
+        <Route path="/staff/customers" element={
+          <PermissionGate requiredPermission="CUSTOMER_VIEW" moduleName="Customers">
+            <CustomersList />
+          </PermissionGate>
+        } />
+        <Route path="/staff/customers/:id" element={
+          <PermissionGate requiredPermission="CUSTOMER_VIEW" moduleName="Customer Details">
+            <CustomerDetail />
+          </PermissionGate>
+        } />
+        <Route path="/staff/employees" element={
+          <PermissionGate requiredPermission="EMPLOYEE_VIEW" moduleName="Employees">
+            <EmployeesList />
+          </PermissionGate>
+        } />
+        <Route path="/staff/employees/:id" element={
+          <PermissionGate requiredPermission="EMPLOYEE_VIEW" moduleName="Employee Details">
+            <EmployeeDetail />
+          </PermissionGate>
+        } />
+        <Route path="/staff/technicians" element={
+          <PermissionGate requiredPermission="TECHNICIAN_VIEW" moduleName="Technicians">
+            <TechniciansList />
+          </PermissionGate>
+        } />
+        <Route path="/staff/technicians/:id" element={
+          <PermissionGate requiredPermission="TECHNICIAN_VIEW" moduleName="Technician Details">
+            <TechnicianDetail />
+          </PermissionGate>
+        } />
+        <Route path="/staff/inventory" element={
+          <PermissionGate requiredPermission="INVENTORY_VIEW" moduleName="Inventory">
+            <InventoryPage />
+          </PermissionGate>
+        } />
+        <Route path="/staff/billing" element={
+          <PermissionGate requiredPermission="BILLING_VIEW" moduleName="Billing">
+            <BillingPage />
+          </PermissionGate>
+        } />
+        <Route path="/staff/subscriptions" element={
+          <PermissionGate requiredPermission="SUBSCRIPTION_VIEW" moduleName="Subscriptions">
+            <SubscriptionManagement />
+          </PermissionGate>
+        } />
+        <Route path="/staff/subscription-plans" element={
+          <PermissionGate requiredPermission="SUBSCRIPTION_PLAN_VIEW" moduleName="Subscription Plans">
+            <SubscriptionPlansList />
+          </PermissionGate>
+        } />
+        <Route path="/staff/service-tasks" element={
+          <PermissionGate requiredPermission="TASK_VIEW" moduleName="Service Tasks">
+            <ServiceTasksPage />
+          </PermissionGate>
+        } />
         <Route path="/staff/settings" element={<SettingsPage />} />
 
         {/* Technician Routes */}
@@ -90,3 +151,4 @@ const AppRoutes = () => {
 };
 
 export default AppRoutes;
+

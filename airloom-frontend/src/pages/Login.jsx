@@ -76,7 +76,7 @@ const Login = () => {
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
         }}
       >
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           {/* Header */}
           <div style={{ textAlign: 'center' }}>
             <div

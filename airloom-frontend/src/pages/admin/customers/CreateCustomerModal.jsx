@@ -3,13 +3,13 @@ import { Modal, Form, Input, Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { createCustomer } from '../../../api/customers.api';
-import { selectUserName } from '../../../features/auth/authSelectors';
+import { selectUserId } from '../../../features/auth/authSelectors';
 
 const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState([]);
-  const userName = useSelector(selectUserName);
+  const userId = useSelector(selectUserId);
 
   const handleSubmit = async () => {
     try {
@@ -23,8 +23,10 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
       formData.append('Address', values.Address || '');
       formData.append('City', values.City || '');
       formData.append('Pincode', values.Pincode || '');
-      formData.append('PasswordHash', values.Password);
-      formData.append('CreatedBy', userName);
+      if (values.Password) {
+        formData.append('PasswordHash', values.Password);
+      }
+      formData.append('CreatedBy', userId);
 
       if (fileList.length > 0) {
         const fileToUpload = fileList[0].originFileObj || fileList[0];
@@ -119,10 +121,9 @@ const CreateCustomerModal = ({ visible, onCancel, onSuccess }) => {
 
         <Form.Item
           name="Password"
-          label="Password"
-          rules={[{ required: true, message: 'Please enter password' }]}
+          label="Password (Optional)"
         >
-          <Input.Password placeholder="Enter password" />
+          <Input.Password placeholder="Enter password (optional)" />
         </Form.Item>
 
         <Form.Item label="Profile Image">

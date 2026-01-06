@@ -280,7 +280,7 @@ const InventoryPage = () => {
       dataIndex: 'QuantityInStock',
       key: 'QuantityInStock',
       render: (qty, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Text strong style={{ color: qty <= record.ReorderLevel ? '#ff4d4f' : 'inherit' }}>
             {qty}
           </Text>
@@ -474,7 +474,7 @@ const InventoryPage = () => {
               title="Low Stock Products"
               value={lowStockProducts.length}
               prefix={<WarningOutlined style={{ color: '#ff4d4f' }} />}
-              valueStyle={{ color: lowStockProducts.length > 0 ? '#ff4d4f' : 'inherit' }}
+              styles={{ content: { color: lowStockProducts.length > 0 ? '#ff4d4f' : 'inherit' } }}
             />
           </Card>
         </Col>
@@ -541,7 +541,7 @@ const InventoryPage = () => {
                       }
                       title={item.Name}
                       description={
-                        <Space direction="vertical" size={0}>
+                        <Space orientation="vertical" size={0}>
                           <Text type="secondary">In Stock: <Text strong color="error">{item.QuantityInStock}</Text></Text>
                           <Text type="secondary" style={{ fontSize: '12px' }}>Level: {item.ReorderLevel}</Text>
                         </Space>

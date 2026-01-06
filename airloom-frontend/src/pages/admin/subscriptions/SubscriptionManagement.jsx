@@ -182,7 +182,7 @@ const SubscriptionManagement = () => {
             <Tooltip title="View Details">
               <Button 
                 type="text" 
-                icon={<EyeOutlined />} 
+                icon={<EyeOutlined style={{ color: '#1890ff' }} />} 
                 onClick={() => handleView(record.Id)} 
               />
             </Tooltip>
@@ -241,17 +241,17 @@ const SubscriptionManagement = () => {
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderLeft: '4px solid #52c41a' }}>
-            <Statistic title="Active" value={stats.active} valueStyle={{ color: '#52c41a' }} />
+            <Statistic title="Active" value={stats.active} styles={{ content: { color: '#52c41a' } }} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderLeft: '4px solid #faad14' }}>
-            <Statistic title="Paused" value={stats.paused} valueStyle={{ color: '#faad14' }} />
+            <Statistic title="Paused" value={stats.paused} styles={{ content: { color: '#faad14' } }} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card bordered={false} style={{ borderLeft: '4px solid #f5222d' }}>
-            <Statistic title="Cancelled" value={stats.cancelled} valueStyle={{ color: '#f5222d' }} />
+            <Statistic title="Cancelled" value={stats.cancelled} styles={{ content: { color: '#f5222d' } }} />
           </Card>
         </Col>
       </Row>

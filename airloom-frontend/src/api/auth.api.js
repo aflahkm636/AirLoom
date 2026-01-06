@@ -21,11 +21,11 @@ export const loginUser = async (email, password) => {
 };
 
 /**
- * Fetch user profile by ID
- * @param {number|string} id - User ID
+ * Fetch current user's profile (uses JWT token to identify user)
  * @returns {Promise} API response with data containing user profile
  */
-export const getUserProfile = async (id) => {
-  const response = await api.get(`/api/users/${id}`);
+export const getUserProfile = async () => {
+  const response = await api.get('/api/users/Profile');
   return response.data;
 };
+

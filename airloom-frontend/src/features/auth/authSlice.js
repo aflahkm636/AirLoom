@@ -10,6 +10,7 @@ const initialState = {
   isAuthenticated: false,
   loading: false,
   error: null,
+  profileFetched: false, // Prevents duplicate profile API calls
 };
 
 // Async thunk for login
@@ -38,9 +39,11 @@ export const loginAsync = createAsyncThunk(
         return rejectWithValue('Role not found in token - forcing logout');
       }
       
-      // Extract userName and userId from token
+      // Extract userName, userId, departmentId, and permissions from token
       const userName = decoded.UserName || decoded.userName || 'User';
       const userId = decoded.UserId || decoded.userId || null;
+      const departmentId = decoded.departmentId ? parseInt(decoded.departmentId, 10) : null;
+      const permissions = decoded.permissions ? decoded.permissions.split(',') : [];
       
       // Return user data and token
       return {
@@ -49,6 +52,8 @@ export const loginAsync = createAsyncThunk(
           userName,
           role,
           id: userId,
+          departmentId,
+          permissions,
         },
       };
     } catch (error) {
@@ -58,12 +63,12 @@ export const loginAsync = createAsyncThunk(
   }
 );
 
-// Async thunk for fetching user profile
+// Async thunk for fetching user profile (uses JWT token for identification)
 export const fetchUserProfileAsync = createAsyncThunk(
   'auth/fetchProfile',
-  async (userId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await getUserProfile(userId);
+      const response = await getUserProfile();
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
@@ -164,15 +169,34 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
       })
-      // Fetch user profile
+      // Fetch user profile - prevent duplicate calls and update user data
+      .addCase(fetchUserProfileAsync.pending, (state) => {
+        state.profileFetched = true; // Mark as fetched early to prevent duplicate calls
+      })
       .addCase(fetchUserProfileAsync.fulfilled, (state, action) => {
         if (state.user) {
+          const profileData = action.payload;
           state.user = {
             ...state.user,
-            profileImage: action.payload.ProfileImage || action.payload.profileImage,
-            name: action.payload.Name || action.payload.name || state.user.userName
+            profileImage: profileData.ProfileImage || profileData.profileImage || null,
+            name: profileData.Name || profileData.name || state.user.userName,
+            email: profileData.Email || profileData.email,
+            phone: profileData.Phone || profileData.phone,
+            departmentId: profileData.DepartmentId || profileData.departmentId || state.user.departmentId,
+            departmentName: profileData.DepartmentName || profileData.departmentName,
           };
+          
+          // Persist updated user to localStorage
+          const authData = localStorage.getItem('airloom_auth');
+          if (authData) {
+            const parsed = JSON.parse(authData);
+            parsed.user = state.user;
+            localStorage.setItem('airloom_auth', JSON.stringify(parsed));
+          }
         }
+      })
+      .addCase(fetchUserProfileAsync.rejected, (state) => {
+        state.profileFetched = true; // Still mark as fetched to prevent retry loops
       });
   },
 });

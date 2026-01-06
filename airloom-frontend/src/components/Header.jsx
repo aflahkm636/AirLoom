@@ -5,7 +5,7 @@ import { Dropdown, Avatar, Badge } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import Swal from 'sweetalert2';
 import { logout, fetchUserProfileAsync } from '../features/auth/authSlice';
-import { selectUser } from '../features/auth/authSelectors';
+import { selectUser, selectProfileFetched } from '../features/auth/authSelectors';
 import { API_BASE_URL } from '../utils/constants';
 
 // Map routes to page titles
@@ -23,12 +23,14 @@ const Header = ({ userName = 'John Doe', userRole = 'Admin', onMenuToggle }) => 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+  const profileFetched = useSelector(selectProfileFetched);
 
+  // Fetch profile only once per session
   useEffect(() => {
-    if (user?.id && !user.profileImage) {
-      dispatch(fetchUserProfileAsync(user.id));
+    if (!profileFetched) {
+      dispatch(fetchUserProfileAsync());
     }
-  }, [dispatch, user?.id, user?.profileImage]);
+  }, [dispatch, profileFetched]);
 
   const profileImageUrl = user?.profileImage 
     ? (user.profileImage.startsWith('http') ? user.profileImage : `${API_BASE_URL}/${user.profileImage}`)
