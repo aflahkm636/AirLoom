@@ -1,55 +1,33 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Form, Input, Button, message, Space, Typography } from 'antd';
-import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
-import { loginAsync } from '../features/auth/authSlice';
-import {
-  selectIsAuthenticated,
-  selectAuthLoading,
-  selectAuthError,
-  selectUserRole,
-} from '../features/auth/authSelectors';
-import { ROLE_ROUTES } from '../utils/constants';
+import { MailOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
+import { sendOtp } from '../api/users.api';
 
 const { Title, Text } = Typography;
 
-const Login = () => {
+const ForgotPasswordPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const loading = useSelector(selectAuthLoading);
-  const error = useSelector(selectAuthError);
-  const userRole = useSelector(selectUserRole);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated && userRole) {
-      const route = ROLE_ROUTES[userRole] || '/admin';
-      navigate(route, { replace: true });
-    }
-  }, [isAuthenticated, userRole, navigate]);
-
-  // Show error message
-  useEffect(() => {
-    if (error) {
-      message.error(error);
-    }
-  }, [error]);
+  const [loading, setLoading] = useState(false);
 
   const onFinish = async (values) => {
-    const result = await dispatch(
-      loginAsync({
-        email: values.email,
-        password: values.password,
-      })
-    );
-
-    if (loginAsync.fulfilled.match(result)) {
-      message.success('Login successful!');
-      const role = result.payload.user.role;
-      const route = ROLE_ROUTES[role] || '/admin';
-      navigate(route, { replace: true });
+    setLoading(true);
+    try {
+      const response = await sendOtp({ email: values.email });
+      
+      if (response.statusCode === 200) {
+        message.success('OTP sent to your email!');
+        // Navigate to reset password page with email
+        navigate('/reset-password', { state: { email: values.email } });
+      } else {
+        message.error(response.message || 'Failed to send OTP');
+      }
+    } catch (error) {
+      // Show exact backend error message
+      const errorMessage = error.response?.data?.message || 'Failed to send OTP';
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,7 +54,7 @@ const Login = () => {
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
         }}
       >
-        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
           {/* Header */}
           <div style={{ textAlign: 'center' }}>
             <div
@@ -91,19 +69,19 @@ const Login = () => {
                 justifyContent: 'center',
               }}
             >
-              <LoginOutlined style={{ fontSize: '32px', color: '#fff' }} />
+              <MailOutlined style={{ fontSize: '32px', color: '#fff' }} />
             </div>
             <Title level={2} style={{ margin: '0 0 8px 0', color: '#fff' }}>
-              Welcome Back
+              Forgot Password?
             </Title>
             <Text style={{ color: 'rgba(255, 255, 255, 0.65)' }}>
-              Sign in to Airloom Management System
+              Enter your email and we'll send you an OTP to reset your password
             </Text>
           </div>
 
-          {/* Login Form */}
+          {/* Form */}
           <Form
-            name="login"
+            name="forgot-password"
             onFinish={onFinish}
             layout="vertical"
             size="large"
@@ -117,7 +95,7 @@ const Login = () => {
               ]}
             >
               <Input
-                prefix={<UserOutlined style={{ color: 'rgba(255, 255, 255, 0.45)' }} />}
+                prefix={<MailOutlined style={{ color: 'rgba(255, 255, 255, 0.45)' }} />}
                 placeholder="Email"
                 style={{
                   background: 'rgba(42, 36, 51, 0.6)',
@@ -127,31 +105,15 @@ const Login = () => {
               />
             </Form.Item>
 
-            <Form.Item
-              name="password"
-              rules={[
-                { required: true, message: 'Please enter your password' },
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined style={{ color: 'rgba(255, 255, 255, 0.45)' }} />}
-                placeholder="Password"
-                style={{
-                  background: 'rgba(42, 36, 51, 0.6)',
-                  border: '1px solid rgba(60, 53, 71, 0.8)',
-                  color: '#fff',
-                }}
-              />
-            </Form.Item>
-
-            <Form.Item style={{ marginBottom: 0 }}>
+            <Form.Item style={{ marginBottom: 16 }}>
               <Button
                 type="primary"
                 htmlType="submit"
                 loading={loading}
+                disabled={loading}
                 block
                 size="large"
-                icon={<LoginOutlined />}
+                icon={<SendOutlined />}
                 style={{
                   height: '48px',
                   fontSize: '16px',
@@ -161,24 +123,26 @@ const Login = () => {
                   boxShadow: '0 4px 12px rgba(127, 19, 236, 0.3)',
                 }}
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? 'Sending OTP...' : 'Send OTP'}
               </Button>
             </Form.Item>
-
-            {/* Forgot Password Link */}
-            <div style={{ textAlign: 'center', marginTop: 16 }}>
-              <a
-                onClick={() => navigate('/forgot-password')}
-                style={{
-                  color: '#a855f7',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                }}
-              >
-                Forgot Password?
-              </a>
-            </div>
           </Form>
+
+          {/* Back to Login Link */}
+          <div style={{ textAlign: 'center' }}>
+            <Link
+              to="/login"
+              style={{
+                color: '#a855f7',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px',
+              }}
+            >
+              <ArrowLeftOutlined /> Back to Login
+            </Link>
+          </div>
 
           {/* Footer */}
           <div style={{ textAlign: 'center', paddingTop: '16px', borderTop: '1px solid rgba(60, 53, 71, 0.5)' }}>
@@ -192,4 +156,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ForgotPasswordPage;

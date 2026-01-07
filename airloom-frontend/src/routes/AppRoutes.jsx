@@ -6,6 +6,9 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import PermissionGate from '../components/PermissionGate';
 import DashboardLayout from '../layouts/DashboardLayout';
 import Login from '../pages/Login';
+import ForgotPasswordPage from '../pages/ForgotPasswordPage';
+import ResetPasswordPage from '../pages/ResetPasswordPage';
+import ProfilePage from '../pages/ProfilePage';
 import AdminDashboard from '../pages/AdminDashboard';
 import CustomerDashboard from '../pages/CustomerDashboard';
 import StaffDashboard from '../pages/StaffDashboard';
@@ -28,6 +31,9 @@ import SubscriptionPlansList from '../pages/admin/subscription-plans/Subscriptio
 import ServiceTasksPage from '../pages/admin/service-tasks/ServiceTasksPage';
 import TechniciansList from '../pages/admin/technicians/TechniciansList';
 import TechnicianDetail from '../pages/admin/technicians/TechnicianDetail';
+import UsersList from '../pages/admin/users/UsersList';
+import PendingBillsList from '../pages/admin/billing/PendingBillsList';
+import MyBillsList from '../pages/customer/MyBillsList';
 
 const AppRoutes = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -44,6 +50,8 @@ const AppRoutes = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Protected Routes with Dashboard Layout */}
       <Route
@@ -53,8 +61,12 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
+        {/* Profile Route - Accessible to all authenticated users */}
+        <Route path="/profile" element={<ProfilePage />} />
+
         {/* Admin Routes - No permission gates needed, admin has all access */}
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<UsersList />} />
         <Route path="/admin/customers" element={<CustomersList />} />
         <Route path="/admin/customers/:id" element={<CustomerDetail />} />
         <Route path="/admin/employees" element={<EmployeesList />} />
@@ -62,7 +74,7 @@ const AppRoutes = () => {
         <Route path="/admin/technicians" element={<TechniciansList />} />
         <Route path="/admin/technicians/:id" element={<TechnicianDetail />} />
         <Route path="/admin/inventory" element={<InventoryPage />} />
-        <Route path="/admin/billing" element={<BillingPage />} />
+        <Route path="/admin/billing" element={<PendingBillsList />} />
         <Route path="/admin/subscriptions" element={<SubscriptionManagement />} />
         <Route path="/admin/subscription-plans" element={<SubscriptionPlansList />} />
         <Route path="/admin/service-tasks" element={<ServiceTasksPage />} />
@@ -107,7 +119,7 @@ const AppRoutes = () => {
         } />
         <Route path="/staff/billing" element={
           <PermissionGate requiredPermission="BILLING_VIEW" moduleName="Billing">
-            <BillingPage />
+            <PendingBillsList />
           </PermissionGate>
         } />
         <Route path="/staff/subscriptions" element={
@@ -138,6 +150,7 @@ const AppRoutes = () => {
 
         {/* Customer Routes */}
         <Route path="/customer" element={<CustomerDashboard />} />
+        <Route path="/customer/my-bills" element={<MyBillsList />} />
         <Route path="/customer/settings" element={<SettingsPage />} />
       </Route>
 

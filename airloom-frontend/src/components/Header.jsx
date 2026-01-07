@@ -11,11 +11,13 @@ import { API_BASE_URL } from '../utils/constants';
 // Map routes to page titles
 const pageTitles = {
   'dashboard': 'Dashboard',
+  'users': 'User Management',
   'customers': 'Customers',
   'inventory': 'Inventory',
   'billing': 'Billing',
   'service-tasks': 'Service Tasks',
   'settings': 'Settings',
+  'profile': 'My Profile',
 };
 
 const Header = ({ userName = 'John Doe', userRole = 'Admin', onMenuToggle }) => {
@@ -73,6 +75,8 @@ const Header = ({ userName = 'John Doe', userRole = 'Admin', onMenuToggle }) => 
   const handleMenuClick = ({ key }) => {
     if (key === 'logout') {
       handleLogout();
+    } else if (key === 'profile') {
+      navigate('/profile');
     } else if (key === 'settings') {
       const basePath = `/${userRole?.toLowerCase() || 'admin'}`;
       navigate(`${basePath}/settings`);
