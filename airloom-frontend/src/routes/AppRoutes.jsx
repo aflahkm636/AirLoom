@@ -14,12 +14,7 @@ import CustomerDashboard from '../pages/CustomerDashboard';
 import StaffDashboard from '../pages/StaffDashboard';
 import TechnicianDashboard from '../pages/TechnicianDashboard';
 import {
-  BillingPage,
-  ServiceTasksPage as ServiceTasksPlaceholder,
   SettingsPage,
-  CustomersPage,
-  SubscriptionsPage,
-  InventoryPage as InventoryPlaceholder,
 } from '../pages/PlaceholderPages';
 import CustomersList from '../pages/admin/customers/CustomersList';
 import CustomerDetail from '../pages/admin/customers/CustomerDetail';
@@ -34,6 +29,10 @@ import TechnicianDetail from '../pages/admin/technicians/TechnicianDetail';
 import UsersList from '../pages/admin/users/UsersList';
 import PendingBillsList from '../pages/admin/billing/PendingBillsList';
 import MyBillsList from '../pages/customer/MyBillsList';
+// Technician pages
+import MyTasksPage from '../pages/technician/MyTasksPage';
+import MyComplaintsPage from '../pages/technician/MyComplaintsPage';
+import TechnicianProductsPage from '../pages/technician/TechnicianProductsPage';
 
 const AppRoutes = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -141,12 +140,21 @@ const AppRoutes = () => {
 
         {/* Technician Routes */}
         <Route path="/technician" element={<TechnicianDashboard />} />
-        <Route path="/technician/customers" element={<CustomersPage />} />
-        <Route path="/technician/inventory" element={<InventoryPlaceholder />} />
-        <Route path="/technician/billing" element={<BillingPage />} />
-        <Route path="/technician/subscriptions" element={<SubscriptionsPage />} />
-        <Route path="/technician/service-tasks" element={<ServiceTasksPage />} />
-        <Route path="/technician/settings" element={<SettingsPage />} />
+        <Route path="/technician/my-tasks" element={
+          <PermissionGate requiredPermission="TASK_VIEW_OWN" moduleName="My Tasks">
+            <MyTasksPage />
+          </PermissionGate>
+        } />
+        <Route path="/technician/my-complaints" element={
+          <PermissionGate requiredPermission="COMPLAINT_VIEW_ASSIGNED" moduleName="My Complaints">
+            <MyComplaintsPage />
+          </PermissionGate>
+        } />
+        <Route path="/technician/products" element={
+          <PermissionGate requiredPermission="INVENTORY_VIEW" moduleName="Products">
+            <TechnicianProductsPage />
+          </PermissionGate>
+        } />
 
         {/* Customer Routes */}
         <Route path="/customer" element={<CustomerDashboard />} />

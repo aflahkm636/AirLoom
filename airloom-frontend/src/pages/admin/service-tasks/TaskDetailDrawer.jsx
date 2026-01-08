@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Drawer, Descriptions, Tag, Spin, Button, Typography, Divider, Space, Select, Input, message, List, Avatar, Popconfirm, Empty, Flex } from 'antd';
-import { EditOutlined, CheckCircleOutlined, ClockCircleOutlined, PlayCircleOutlined, ExclamationCircleOutlined, UserOutlined, UserAddOutlined, DeleteOutlined, TeamOutlined } from '@ant-design/icons';
+import { EditOutlined, CheckCircleOutlined, ClockCircleOutlined, PlayCircleOutlined, ExclamationCircleOutlined, UserOutlined, UserAddOutlined, DeleteOutlined, TeamOutlined, PlusOutlined, InboxOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { updateTaskStatus, getTaskAssignments, removeTaskAssignment } from '../../../api/serviceTasks.api';
-import { selectUserId, selectUserRole } from '../../../features/auth/authSelectors';
+import { getMaterialUsageByTask, createMaterialUsage, deleteMaterialUsage } from '../../../api/materialUsage.api';
+import { selectUserId, selectUserRole, selectUserDepartmentId, selectUserPermissions } from '../../../features/auth/authSelectors';
 import AssignTechnicianModal from './AssignTechnicianModal';
+import AdminAddMaterialModal from './AdminAddMaterialModal';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -71,9 +73,15 @@ const TaskDetailDrawer = ({ visible, onClose, loading, data, onEdit, onStatusCha
   const [assignmentsLoading, setAssignmentsLoading] = useState(false);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
   const [removingAssignmentId, setRemovingAssignmentId] = useState(null);
+  const [materials, setMaterials] = useState([]);
+  const [materialsLoading, setMaterialsLoading] = useState(false);
+  const [addMaterialVisible, setAddMaterialVisible] = useState(false);
+  const [deletingMaterialId, setDeletingMaterialId] = useState(null);
   
   const userId = useSelector(selectUserId);
   const userRole = useSelector(selectUserRole);
+  const departmentId = useSelector(selectUserDepartmentId);
+  const permissions = useSelector(selectUserPermissions);
 
   const STATUS_ENUM = {
     Pending: 1,
@@ -91,24 +99,39 @@ const TaskDetailDrawer = ({ visible, onClose, loading, data, onEdit, onStatusCha
       setAssignments(response?.data || response || []);
     } catch (error) {
       console.error('Fetch assignments error:', error);
-      // Don't show error message, just set empty assignments
       setAssignments([]);
     } finally {
       setAssignmentsLoading(false);
     }
   }, [data?.Id]);
 
+  const fetchMaterials = useCallback(async () => {
+    if (!data?.Id) return;
+    try {
+      setMaterialsLoading(true);
+      const response = await getMaterialUsageByTask(data.Id);
+      setMaterials(response?.data || []);
+    } catch (error) {
+      console.error('Fetch materials error:', error);
+      setMaterials([]);
+    } finally {
+      setMaterialsLoading(false);
+    }
+  }, [data?.Id]);
+
   useEffect(() => {
     if (visible && data?.Id) {
       fetchAssignments();
+      fetchMaterials();
     }
-  }, [visible, data?.Id, fetchAssignments]);
+  }, [visible, data?.Id, fetchAssignments, fetchMaterials]);
 
   useEffect(() => {
     if (!visible) {
       setNewStatus(null);
       setStatusNotes('');
       setAssignments([]);
+      setMaterials([]);
     }
   }, [visible]);
 
@@ -166,10 +189,31 @@ const TaskDetailDrawer = ({ visible, onClose, loading, data, onEdit, onStatusCha
     if (onRefreshTask) onRefreshTask();
   };
 
+  const handleDeleteMaterial = async (id) => {
+    try {
+      setDeletingMaterialId(id);
+      await deleteMaterialUsage(id);
+      message.success('Material usage deleted');
+      fetchMaterials();
+    } catch (error) {
+      console.error('Delete material error:', error);
+      message.error('Failed to delete material usage');
+    } finally {
+      setDeletingMaterialId(null);
+    }
+  };
+
+  const handleMaterialAdded = () => {
+    setAddMaterialVisible(false);
+    fetchMaterials();
+  };
+
   const validTransitions = data ? getValidTransitions(data.Status, userRole) : [];
   const availableOptions = STATUS_OPTIONS.filter(opt => validTransitions.includes(opt.value));
   const assignedEmployeeIds = assignments.map(a => a.EmployeeId);
   const isAdmin = userRole?.toLowerCase() === 'admin' || userRole?.toLowerCase() === 'staff';
+  // Can manage materials: Admin OR Operations dept (departmentId=2)
+  const canManageMaterials = userRole?.toLowerCase() === 'admin' || departmentId === 2;
 
   if (!data && !loading) {
     return null;
@@ -335,6 +379,83 @@ const TaskDetailDrawer = ({ visible, onClose, loading, data, onEdit, onStatusCha
               </StatusCard>
             )}
 
+            {/* Material Usage Section */}
+            <StatusCard style={{ marginBottom: 24 }}>
+              <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
+                <Space>
+                  <InboxOutlined style={{ color: '#7f13ec' }} />
+                  <Text strong>Material Usage</Text>
+                  <Tag>{materials.length}</Tag>
+                </Space>
+                {canManageMaterials && data.Status !== 'Completed' && (
+                  <Button
+                    type="primary"
+                    ghost
+                    size="small"
+                    icon={<PlusOutlined />}
+                    onClick={() => setAddMaterialVisible(true)}
+                  >
+                    Add
+                  </Button>
+                )}
+              </Flex>
+
+              {materialsLoading ? (
+                <div style={{ textAlign: 'center', padding: 20 }}>
+                  <Spin size="small" />
+                </div>
+              ) : materials.length > 0 ? (
+                <List
+                  size="small"
+                  dataSource={materials}
+                  renderItem={(item) => (
+                    <List.Item
+                      style={{ padding: '8px 0' }}
+                      actions={
+                        canManageMaterials && data.Status !== 'Completed'
+                          ? [
+                              <Popconfirm
+                                key="delete"
+                                title="Delete this material usage?"
+                                onConfirm={() => handleDeleteMaterial(item.Id)}
+                                okText="Yes"
+                                cancelText="No"
+                              >
+                                <Button
+                                  type="text"
+                                  danger
+                                  size="small"
+                                  icon={<DeleteOutlined />}
+                                  loading={deletingMaterialId === item.Id}
+                                />
+                              </Popconfirm>,
+                            ]
+                          : []
+                      }
+                    >
+                      <List.Item.Meta
+                        title={
+                          <Space>
+                            <span>{item.ProductName}</span>
+                            <Tag color={item.UsageType === 'Included' ? 'green' : 'orange'}>
+                              {item.UsageType}
+                            </Tag>
+                          </Space>
+                        }
+                        description={`Qty: ${item.QuantityUsed}`}
+                      />
+                    </List.Item>
+                  )}
+                />
+              ) : (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description="No materials added"
+                  style={{ margin: '16px 0' }}
+                />
+              )}
+            </StatusCard>
+
             <Descriptions column={1} bordered size="small">
               <Descriptions.Item label="Task ID">
                 #{data.Id}
@@ -381,6 +502,13 @@ const TaskDetailDrawer = ({ visible, onClose, loading, data, onEdit, onStatusCha
         onCancel={() => setAssignModalVisible(false)}
         onSuccess={handleAssignSuccess}
         assignedEmployeeIds={assignedEmployeeIds}
+      />
+
+      <AdminAddMaterialModal
+        visible={addMaterialVisible}
+        taskId={data?.Id}
+        onCancel={() => setAddMaterialVisible(false)}
+        onSuccess={handleMaterialAdded}
       />
     </>
   );

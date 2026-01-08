@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUserRole, selectUserName } from '../features/auth/authSelectors';
 import Sidebar from '../components/Sidebar';
+import TechnicianSidebar from '../components/TechnicianSidebar';
 import Header from '../components/Header';
 
 const DashboardLayout = () => {
@@ -18,6 +19,8 @@ const DashboardLayout = () => {
     setSidebarOpen(false);
   };
 
+  const isTechnician = userRole?.toLowerCase() === 'technician';
+
   return (
     <div className="dashboard-layout">
       {/* Mobile Overlay */}
@@ -26,12 +29,19 @@ const DashboardLayout = () => {
         onClick={closeSidebar}
       />
 
-      {/* Fixed Sidebar */}
-      <Sidebar 
-        userRole={userRole} 
-        isOpen={sidebarOpen}
-        onClose={closeSidebar}
-      />
+      {/* Fixed Sidebar - Use TechnicianSidebar for Technician role */}
+      {isTechnician ? (
+        <TechnicianSidebar 
+          isOpen={sidebarOpen}
+          onClose={closeSidebar}
+        />
+      ) : (
+        <Sidebar 
+          userRole={userRole} 
+          isOpen={sidebarOpen}
+          onClose={closeSidebar}
+        />
+      )}
 
       {/* Main Content Area - offset by sidebar width */}
       <div className="dashboard-main">
@@ -54,3 +64,4 @@ const DashboardLayout = () => {
 };
 
 export default DashboardLayout;
+
