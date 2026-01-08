@@ -1,0 +1,6 @@
+@Field_Ops.WebApi_HostAddress = http://localhost:5195
+
+GET {{Field_Ops.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

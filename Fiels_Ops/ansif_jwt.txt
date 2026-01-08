@@ -1,0 +1,1 @@
+﻿{"sub":"1012","UserId":"1012","email":"mohammedansifmka@gmail.com","http://schemas.microsoft.com/ws/2008/06/identity/claims/role":"Technician","UserName":"ansif","permissions":"TASK_VIEW_OWN,TASK_UPDATE_STATUS,TASK_VIEW_ASSIGNMENTS,MATERIAL_USAGE_CREATE,MATERIAL_USAGE_VIEW,COMPLAINT_VIEW_ASSIGNED,COMPLAINT_UPDATE_STATUS","exp":1767778099,"iss":"FieldOps","aud":"FieldOpsUsers"}
