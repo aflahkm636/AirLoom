@@ -20,16 +20,42 @@ export const getTechnicianById = async (id) => {
 };
 
 /**
- * Get technician tasks with optional status filter
- * Backend resolves employeeId from JWT token
- * @param {string} status - Optional status filter (pending, inprogress, completed)
+ * Get technician tasks with optional employeeId and status filter
+ * If employeeId is not provided, backend resolves it from JWT token
+ * Supports two calling patterns:
+ *   - getTechnicianTasks(status) - for technician viewing own tasks
+ *   - getTechnicianTasks(employeeId, status) - for admin viewing specific technician
+ * @param {number|string|null} employeeIdOrStatus - employeeId (number) or status (string) or null
+ * @param {string} status - Optional status filter when first param is employeeId
  * @returns {Promise} API response with technician tasks
  */
-export const getTechnicianTasks = async (status = '') => {
+export const getTechnicianTasks = async (employeeIdOrStatus = null, status = '') => {
   let url = '/api/TaskEmployees/technician';
-  if (status) {
-    url += `?status=${status}`;
+  const params = new URLSearchParams();
+  
+  // Detect calling pattern: if first arg is string, it's status only
+  let employeeId = null;
+  let statusFilter = status;
+  
+  if (typeof employeeIdOrStatus === 'string') {
+    // Called as getTechnicianTasks(status)
+    statusFilter = employeeIdOrStatus;
+  } else if (typeof employeeIdOrStatus === 'number') {
+    // Called as getTechnicianTasks(employeeId, status)
+    employeeId = employeeIdOrStatus;
   }
+  
+  if (employeeId) {
+    params.append('employeeId', employeeId);
+  }
+  if (statusFilter) {
+    params.append('status', statusFilter);
+  }
+  
+  if (params.toString()) {
+    url += `?${params.toString()}`;
+  }
+  
   const response = await api.get(url);
   return response.data;
 };

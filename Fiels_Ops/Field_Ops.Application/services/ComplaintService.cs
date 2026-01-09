@@ -71,6 +71,12 @@ public class ComplaintsService : IComplaintsService
 
     public async Task<ApiResponse<bool>> UpdateStatusAsync(ComplaintStatusUpdateDto dto)
     {
+        // Validation: ResolutionNote is required only when status is Resolved
+        if (dto.NewStatus == ComplaintStatus.Resolved && string.IsNullOrWhiteSpace(dto.ResolutionNote))
+        {
+            throw new ValidationException("Resolution note is required when resolving a complaint.");
+        }
+
         var rows = await _repo.UpdateStatusAsync(dto);
 
         if (rows == 0)
@@ -89,6 +95,20 @@ public class ComplaintsService : IComplaintsService
         return ApiResponse<dynamic?>.SuccessResponse(
             200,
             "Complaints fetched.",
+            data
+        );
+    }
+
+    public async Task<ApiResponse<IEnumerable<MyComplaintDto>>> GetMyComplaintsAsync(int userId)
+    {
+        if (userId <= 0)
+            throw new ArgumentException("Invalid user ID.");
+
+        var data = await _repo.GetMyComplaintsAsync(userId);
+
+        return ApiResponse<IEnumerable<MyComplaintDto>>.SuccessResponse(
+            200,
+            "My complaints fetched.",
             data
         );
     }

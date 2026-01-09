@@ -15,11 +15,14 @@ public class ServiceTasksService : IServiceTasksService
 
     public async Task<ApiResponse<int>> CreateAsync(ServiceTaskCreateDto dto)
     {
-        if (dto.SubscriptionId is null && dto.ComplaintId is null)
-            throw new ArgumentException("SubscriptionId or ComplaintId is required.");
+       bool hasSubscription = dto.SubscriptionId.HasValue && dto.SubscriptionId > 0;
+bool hasComplaint = dto.ComplaintId.HasValue && dto.ComplaintId > 0;
 
-        if (dto.SubscriptionId is not null && dto.ComplaintId is not null)
-            throw new ArgumentException("Only one of SubscriptionId or ComplaintId can be provided.");
+if (!hasSubscription && !hasComplaint)
+    throw new ArgumentException("SubscriptionId or ComplaintId is required.");
+
+if (hasSubscription && hasComplaint)
+    throw new ArgumentException("Only one of SubscriptionId or ComplaintId can be provided.");
 
         int newId = await _repo.CreateAsync(dto);
 

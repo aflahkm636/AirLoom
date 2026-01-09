@@ -24,17 +24,15 @@ public class JwtTokenService : IJwtTokenService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // Get permissions based on role and department
-        var permissions = RolePermissions.GetPermissions(user.Role, user.DepartmentId);
-
+        // JWT now only contains role and departmentId
+        // Permissions are computed server-side using PermissionHandler
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new Claim("UserId", user.UserId.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.UserEmail),
             new Claim(ClaimTypes.Role, user.Role),
-            new Claim("UserName", user.UserName),
-            new Claim("permissions", string.Join(",", permissions))
+            new Claim("UserName", user.UserName)
         };
 
         // Add role-specific claims

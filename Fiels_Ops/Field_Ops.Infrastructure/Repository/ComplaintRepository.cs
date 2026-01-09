@@ -110,4 +110,17 @@ public class ComplaintsRepository : IComplaintsRepository
             commandType: CommandType.StoredProcedure
         );
     }
+
+    public async Task<IEnumerable<MyComplaintDto>> GetMyComplaintsAsync(int actionUserId)
+    {
+        var p = new DynamicParameters();
+        p.Add("@FLAG", "MYCOMPLAINTS");
+        p.Add("@ActionUserId", actionUserId);
+
+        return await _db.QueryAsync<MyComplaintDto>(
+            "SP_COMPLAINTS",
+            p,
+            commandType: CommandType.StoredProcedure
+        );
+    }
 }

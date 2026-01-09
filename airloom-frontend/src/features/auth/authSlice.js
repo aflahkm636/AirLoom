@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { loginUser, getUserProfile } from '../../api/auth.api';
+import { loginUser, getUserProfile, getUserPermissions } from '../../api/auth.api';
 import { decodeToken, getUserRole, isTokenExpired } from '../../utils/jwtHelper';
 import { AUTH_STORAGE_KEY } from '../../utils/constants';
 
@@ -39,13 +39,12 @@ export const loginAsync = createAsyncThunk(
         return rejectWithValue('Role not found in token - forcing logout');
       }
       
-      // Extract userName, userId, departmentId, and permissions from token
+      // Extract userName, userId, departmentId from token (permissions are no longer in JWT)
       const userName = decoded.UserName || decoded.userName || 'User';
       const userId = decoded.UserId || decoded.userId || null;
       const departmentId = decoded.departmentId ? parseInt(decoded.departmentId, 10) : null;
-      const permissions = decoded.permissions ? decoded.permissions.split(',') : [];
       
-      // Return user data and token
+      // Return user data and token (permissions will be fetched separately)
       return {
         token: accessToken,
         user: {
@@ -53,7 +52,7 @@ export const loginAsync = createAsyncThunk(
           role,
           id: userId,
           departmentId,
-          permissions,
+          permissions: [], // Will be populated by fetchPermissionsAsync
         },
       };
     } catch (error) {
@@ -72,6 +71,20 @@ export const fetchUserProfileAsync = createAsyncThunk(
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
+    }
+  }
+);
+
+// Async thunk for fetching user permissions (computed server-side)
+export const fetchPermissionsAsync = createAsyncThunk(
+  'auth/fetchPermissions',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getUserPermissions();
+      return response.data?.permissions || [];
+    } catch (error) {
+      console.error('Failed to fetch permissions:', error);
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch permissions');
     }
   }
 );
@@ -197,6 +210,24 @@ const authSlice = createSlice({
       })
       .addCase(fetchUserProfileAsync.rejected, (state) => {
         state.profileFetched = true; // Still mark as fetched to prevent retry loops
+      })
+      // Fetch permissions
+      .addCase(fetchPermissionsAsync.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.permissions = action.payload || [];
+          
+          // Persist updated user to localStorage
+          const authData = localStorage.getItem('airloom_auth');
+          if (authData) {
+            const parsed = JSON.parse(authData);
+            parsed.user = state.user;
+            localStorage.setItem('airloom_auth', JSON.stringify(parsed));
+          }
+        }
+      })
+      .addCase(fetchPermissionsAsync.rejected, (state) => {
+        // Keep empty permissions array on failure
+        console.warn('Failed to fetch permissions, using empty array');
       });
   },
 });

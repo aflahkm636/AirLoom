@@ -8,7 +8,6 @@ import dayjs from 'dayjs';
 const { Title, Text } = Typography;
 
 const STATUS_COLORS = {
-  Pending: 'orange',
   Assigned: 'blue',
   InProgress: 'processing',
   AwaitingApproval: 'purple',

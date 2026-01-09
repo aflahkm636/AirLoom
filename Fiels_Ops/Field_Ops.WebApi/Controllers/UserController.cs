@@ -102,5 +102,44 @@ namespace Field_Ops.API.Controllers
             var result = await _service.ResetPasswordAsync(dto);
             return StatusCode(result.StatusCode, result);
         }
+
+        /// <summary>
+        /// Get current user's permissions based on role and department.
+        /// Permissions are computed server-side, not stored in JWT.
+        /// </summary>
+        [Authorize]
+        [HttpGet("me/permissions")]
+        public IActionResult GetMyPermissions()
+        {
+            // Get role from claims
+            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (string.IsNullOrEmpty(role))
+            {
+                return Unauthorized(new { success = false, message = "Role not found in token" });
+            }
+
+            // Get departmentId if present (for Staff role)
+            int? departmentId = null;
+            var departmentClaim = User.FindFirst("departmentId");
+            if (departmentClaim != null && int.TryParse(departmentClaim.Value, out int deptId))
+            {
+                departmentId = deptId;
+            }
+
+            // Compute permissions server-side
+            var permissions = RolePermissions.GetPermissions(role, departmentId);
+
+            return Ok(new 
+            { 
+                statusCode = 200,
+                message = "Permissions fetched.",
+                data = new 
+                {
+                    role,
+                    departmentId,
+                    permissions
+                }
+            });
+        }
     }
 }

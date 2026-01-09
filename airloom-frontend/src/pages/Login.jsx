@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Form, Input, Button, message, Space, Typography } from 'antd';
 import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
-import { loginAsync } from '../features/auth/authSlice';
+import { loginAsync, fetchPermissionsAsync } from '../features/auth/authSlice';
 import {
   selectIsAuthenticated,
   selectAuthLoading,
@@ -46,6 +46,9 @@ const Login = () => {
     );
 
     if (loginAsync.fulfilled.match(result)) {
+      // Fetch permissions from server after successful login
+      dispatch(fetchPermissionsAsync());
+      
       message.success('Login successful!');
       const role = result.payload.user.role;
       const route = ROLE_ROUTES[role] || '/admin';

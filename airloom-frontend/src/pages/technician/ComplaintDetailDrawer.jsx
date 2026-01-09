@@ -20,16 +20,16 @@ const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 const STATUS_COLORS = {
-  Pending: 'orange',
-  Open: 'blue',
+  Open: 'orange',
+  Assigned: 'blue',
   InProgress: 'processing',
   Resolved: 'green',
   Closed: 'default',
 };
 
 const STATUS_ENUM = {
-  Pending: 1,
-  Open: 2,
+  Open: 1,
+  Assigned: 2,
   InProgress: 3,
   Resolved: 4,
   Closed: 5,
@@ -37,9 +37,12 @@ const STATUS_ENUM = {
 
 /**
  * Get valid status transitions for technician
+ * Technicians can only change:
+ * - Open/Assigned → InProgress
+ * - InProgress → Resolved
  */
 const getValidTransitions = (currentStatus) => {
-  if (currentStatus === 'Pending' || currentStatus === 'Open') {
+  if (currentStatus === 'Open' || currentStatus === 'Assigned') {
     return ['InProgress'];
   }
   if (currentStatus === 'InProgress') {
@@ -53,8 +56,8 @@ const STATUS_OPTIONS = [
   { value: 'Resolved', label: 'Resolved' },
 ];
 
-const updateComplaintStatus = async (data) => {
-  const response = await api.put('/api/Complaints/status', data);
+const updateComplaintStatus = async (id, data) => {
+  const response = await api.put(`/api/Complaints/${id}/status`, data);
   return response.data;
 };
 
@@ -72,11 +75,24 @@ const ComplaintDetailDrawer = ({ visible, onClose, complaint, onComplaintUpdated
       return;
     }
 
+    if (newStatus === 'Resolved' && !statusNotes.trim()) {
+      message.warning('Please provide a resolution note');
+      return;
+    }
+
+    const complaintId = complaint.ComplaintId || complaint.Id || complaint.id;
+
+    if (!complaintId) {
+      console.error('Complaint ID is missing:', complaint);
+      message.error('Internal error: Complaint ID is missing');
+      return;
+    }
+
     try {
       setStatusLoading(true);
-      await updateComplaintStatus({
-        id: complaint.Id,
-        status: STATUS_ENUM[newStatus],
+      await updateComplaintStatus(complaintId, {
+        newStatus: STATUS_ENUM[newStatus],
+        resolutionNote: statusNotes,
       });
       message.success(`Status updated to ${newStatus}`);
       setNewStatus(null);
@@ -107,7 +123,7 @@ const ComplaintDetailDrawer = ({ visible, onClose, complaint, onComplaintUpdated
       <div>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <Title level={4} style={{ margin: 0 }}>Complaint #{complaint.Id}</Title>
+          <Title level={4} style={{ margin: 0 }}>Complaint #{complaint.ComplaintId || complaint.Id || complaint.id}</Title>
           <Tag color={STATUS_COLORS[complaint.Status]} style={{ marginTop: 8, fontSize: 14, padding: '4px 12px' }}>
             {complaint.Status}
           </Tag>
@@ -127,6 +143,12 @@ const ComplaintDetailDrawer = ({ visible, onClose, complaint, onComplaintUpdated
                 onChange={setNewStatus}
                 options={availableOptions}
               />
+              <TextArea
+                placeholder="Add resolution note (required for Resolved)"
+                rows={3}
+                value={statusNotes}
+                onChange={(e) => setStatusNotes(e.target.value)}
+              />
               <Button
                 type="primary"
                 block
@@ -142,7 +164,7 @@ const ComplaintDetailDrawer = ({ visible, onClose, complaint, onComplaintUpdated
 
         {/* Complaint Details */}
         <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label="Complaint ID">#{complaint.Id}</Descriptions.Item>
+          <Descriptions.Item label="Complaint ID">#{complaint.ComplaintId || complaint.Id || complaint.id}</Descriptions.Item>
           <Descriptions.Item label="Status">
             <Tag color={STATUS_COLORS[complaint.Status]}>{complaint.Status}</Tag>
           </Descriptions.Item>

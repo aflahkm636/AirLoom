@@ -1,3 +1,4 @@
+using Field_ops.Domain;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
@@ -6,6 +7,7 @@ namespace Field_Ops.Application.Authorization
     /// <summary>
     /// Handles permission-based authorization requirements.
     /// Admin role automatically passes all permission checks.
+    /// Permissions are computed server-side based on role and departmentId.
     /// </summary>
     public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
     {
@@ -20,15 +22,27 @@ namespace Field_Ops.Application.Authorization
                 return Task.CompletedTask;
             }
 
-            // Check permissions claim
-            var permissionsClaim = context.User.FindFirst("permissions");
-            if (permissionsClaim != null && !string.IsNullOrEmpty(permissionsClaim.Value))
+            // Get role from claims
+            var roleClaim = context.User.FindFirst(ClaimTypes.Role);
+            if (roleClaim == null)
             {
-                var permissions = permissionsClaim.Value.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                if (permissions.Contains(requirement.Permission))
-                {
-                    context.Succeed(requirement);
-                }
+                return Task.CompletedTask;
+            }
+
+            // Get departmentId if present (for Staff role)
+            int? departmentId = null;
+            var departmentClaim = context.User.FindFirst("departmentId");
+            if (departmentClaim != null && int.TryParse(departmentClaim.Value, out int deptId))
+            {
+                departmentId = deptId;
+            }
+
+            // Compute permissions server-side based on role and department
+            var permissions = RolePermissions.GetPermissions(roleClaim.Value, departmentId);
+            
+            if (permissions.Contains(requirement.Permission))
+            {
+                context.Succeed(requirement);
             }
 
             return Task.CompletedTask;

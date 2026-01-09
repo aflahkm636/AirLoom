@@ -29,3 +29,12 @@ export const getUserProfile = async () => {
   return response.data;
 };
 
+/**
+ * Fetch current user's permissions (computed server-side based on role and department)
+ * @returns {Promise} API response with data containing role, departmentId, and permissions array
+ */
+export const getUserPermissions = async () => {
+  const response = await api.get('/api/users/me/permissions');
+  return response.data;
+};
+

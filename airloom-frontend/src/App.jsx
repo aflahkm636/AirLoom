@@ -1,18 +1,28 @@
 import { useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { Provider, useDispatch } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import { ConfigProvider, theme } from 'antd';
 import { store } from './app/store';
-import { initializeAuth } from './features/auth/authSlice';
+import { initializeAuth, fetchPermissionsAsync } from './features/auth/authSlice';
+import { selectIsAuthenticated, selectUserPermissions } from './features/auth/authSelectors';
 import AppRoutes from './routes/AppRoutes';
 
 // Component to initialize auth
 const AuthInitializer = ({ children }) => {
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const permissions = useSelector(selectUserPermissions);
 
   useEffect(() => {
     dispatch(initializeAuth());
   }, [dispatch]);
+
+  // Fetch permissions after auth is restored from localStorage
+  useEffect(() => {
+    if (isAuthenticated && permissions.length === 0) {
+      dispatch(fetchPermissionsAsync());
+    }
+  }, [isAuthenticated, permissions.length, dispatch]);
 
   return children;
 };

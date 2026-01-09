@@ -56,10 +56,9 @@ const MyComplaintsPage = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'Id',
       key: 'Id',
       width: 70,
-      render: (id) => <Text strong>#{id}</Text>,
+      render: (_, record) => <Text strong>#{record.ComplaintId || record.Id || record.id}</Text>,
     },
     {
       title: 'Status',
@@ -116,7 +115,7 @@ const MyComplaintsPage = () => {
           <Table
             columns={columns}
             dataSource={complaints}
-            rowKey="Id"
+            rowKey={(record) => record.ComplaintId || record.Id || record.id || Math.random()}
             pagination={{ pageSize: 10, responsive: true }}
             scroll={{ x: 'max-content' }}
             size="middle"

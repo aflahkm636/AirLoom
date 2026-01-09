@@ -38,7 +38,6 @@ const { Option } = Select;
 
 const statusOptions = [
   { value: '', label: 'All Tasks' },
-  { value: 'pending', label: 'Pending' },
   { value: 'assigned', label: 'Assigned' },
   { value: 'inprogress', label: 'In Progress' },
   { value: 'awaitingapproval', label: 'Awaiting Approval' },

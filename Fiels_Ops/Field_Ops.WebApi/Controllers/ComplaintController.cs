@@ -88,11 +88,12 @@ public class ComplaintsController : ControllerBase
 
 
     [Authorize(Policy = Permissions.COMPLAINT_UPDATE_STATUS)]
-    [HttpPut("status")]
-    public async Task<IActionResult> UpdateStatus(ComplaintStatusUpdateDto dto)
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] ComplaintStatusUpdateDto dto)
     {
         try
         {
+            dto.Id = id;
             dto.ActionUserId = User.GetUserId();
             var result = await _service.UpdateStatusAsync(dto);
             return StatusCode(result.StatusCode, result);
@@ -128,6 +129,22 @@ public class ComplaintsController : ControllerBase
             int userId = User.GetUserId();
             int employeeId=await _employeesRepository.GetEmployeeIdByUSerID(userId);
             var result = await _service.GetComplaintsAssignedToTechnicianAsync(employeeId);
+            return StatusCode(result.StatusCode, result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(400, new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet("my")]
+    [Authorize]
+    public async Task<IActionResult> GetMyComplaintsAsync()
+    {
+        try
+        {
+            int userId = User.GetUserId();
+            var result = await _service.GetMyComplaintsAsync(userId);
             return StatusCode(result.StatusCode, result);
         }
         catch (Exception ex)

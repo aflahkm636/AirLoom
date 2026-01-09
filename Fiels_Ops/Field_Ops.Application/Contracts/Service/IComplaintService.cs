@@ -18,5 +18,6 @@ namespace Field_Ops.Application.Contracts.Service
         Task<ApiResponse<bool>> UpdateStatusAsync(ComplaintStatusUpdateDto dto);
 
         Task<ApiResponse<dynamic?>> GetComplaintsAssignedToTechnicianAsync(int employeeId);
+        Task<ApiResponse<IEnumerable<MyComplaintDto>>> GetMyComplaintsAsync(int userId);
     }
 }

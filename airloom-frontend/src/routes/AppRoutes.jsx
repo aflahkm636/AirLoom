@@ -24,6 +24,7 @@ import InventoryPage from '../pages/admin/inventory/InventoryPage';
 import SubscriptionManagement from '../pages/admin/subscriptions/SubscriptionManagement';
 import SubscriptionPlansList from '../pages/admin/subscription-plans/SubscriptionPlansList';
 import ServiceTasksPage from '../pages/admin/service-tasks/ServiceTasksPage';
+import ComplaintsPage from '../pages/admin/complaints/ComplaintsPage';
 import TechniciansList from '../pages/admin/technicians/TechniciansList';
 import TechnicianDetail from '../pages/admin/technicians/TechnicianDetail';
 import UsersList from '../pages/admin/users/UsersList';
@@ -77,6 +78,7 @@ const AppRoutes = () => {
         <Route path="/admin/subscriptions" element={<SubscriptionManagement />} />
         <Route path="/admin/subscription-plans" element={<SubscriptionPlansList />} />
         <Route path="/admin/service-tasks" element={<ServiceTasksPage />} />
+        <Route path="/admin/complaints" element={<ComplaintsPage />} />
         <Route path="/admin/settings" element={<SettingsPage />} />
 
         {/* Staff Routes - Protected by PermissionGate */}
@@ -134,6 +136,11 @@ const AppRoutes = () => {
         <Route path="/staff/service-tasks" element={
           <PermissionGate requiredPermission="TASK_VIEW" moduleName="Service Tasks">
             <ServiceTasksPage />
+          </PermissionGate>
+        } />
+        <Route path="/staff/complaints" element={
+          <PermissionGate requiredPermission="COMPLAINT_VIEW" moduleName="Complaints">
+            <ComplaintsPage />
           </PermissionGate>
         } />
         <Route path="/staff/settings" element={<SettingsPage />} />

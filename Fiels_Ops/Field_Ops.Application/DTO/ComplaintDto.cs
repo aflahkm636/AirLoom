@@ -27,11 +27,22 @@ namespace Field_Ops.Application.DTO
 
     public class ComplaintStatusUpdateDto
     {
+        [JsonIgnore]
         public int Id { get; set; }
         public ComplaintStatus NewStatus { get; set; }
         public string? ResolutionNote { get; set; }
         [JsonIgnore]
         public int ActionUserId { get; set; }
+    }
+
+    public class MyComplaintDto
+    {
+        public int Id { get; set; }
+        public string Description { get; set; }
+        public string Status { get; set; }
+        public string? ResolutionNote { get; set; }
+        public DateTime? ResolvedAt { get; set; }
+        public DateTime CreatedOn { get; set; }
     }
 
 }
