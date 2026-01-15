@@ -2,7 +2,7 @@
 
 AirLoom is a comprehensive management platform designed to streamline field operations, service tasks, and customer complaints. Built with a modern tech stack, it provides a robust solution for managing technicians, inventory, subscriptions, and billing.
 
-## 🚀 Key Features
+##  Key Features
 
 - **Role-Based Access Control**: Secure modules for Admin, Staff, Technicians, and Customers.
 - **Task & Complaint Management**: End-to-end workflow for tracking field tasks and resolving customer issues.
@@ -11,7 +11,7 @@ AirLoom is a comprehensive management platform designed to streamline field oper
 - **Clean Architecture**: Backend following decoupled, maintainable standards.
 - **Responsive UI**: Modern dashboard built with Ant Design and Tailwind CSS.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **Framework**: React 19 (Vite)
@@ -40,7 +40,6 @@ AirLoom is a comprehensive management platform designed to streamline field oper
 
 ### Backend Setup
 1. Navigate to `Fiels_Ops/`.
-2. Update `appsettings.json` with your Connection String and Cloudinary keys.
 3. Run migrations and start the server:
    ```bash
    dotnet run --project Field_Ops.WebApi
